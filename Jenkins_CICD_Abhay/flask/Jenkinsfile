@@ -1,0 +1,64 @@
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out Flask application'
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('Jenkins_CICD_Abhay/flask') {
+                    sh '''
+                        python3 --version
+                        python3 -m venv venv
+                        venv/bin/pip install --upgrade pip
+                        venv/bin/pip install -r requirements.txt
+                        venv/bin/pip install gunicorn
+                    '''
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('Jenkins_CICD_Abhay/flask') {
+                    sh '''
+                        venv/bin/python -m compileall -q app.py
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('Jenkins_CICD_Abhay/flask') {
+                    sh '''
+                        rsync -a --delete --exclude=venv ./ /opt/flask-app/
+                        python3 -m venv /opt/flask-app/venv
+                        /opt/flask-app/venv/bin/pip install -r /opt/flask-app/requirements.txt
+                        /opt/flask-app/venv/bin/pip install gunicorn
+                        sudo systemctl restart flask-app
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Flask deployment completed successfully!'
+        }
+        failure {
+            echo 'Flask deployment failed. Check the console output.'
+        }
+    }
+}

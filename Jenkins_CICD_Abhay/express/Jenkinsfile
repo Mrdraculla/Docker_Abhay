@@ -1,0 +1,61 @@
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out Express application'
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('Jenkins_CICD_Abhay/express') {
+                    sh '''
+                        node --version
+                        npm --version
+                        npm ci
+                    '''
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('Jenkins_CICD_Abhay/express') {
+                    sh '''
+                        node --check server.js
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('Jenkins_CICD_Abhay/express') {
+                    sh '''
+                        rsync -a --delete --exclude=node_modules ./ /opt/express-app/
+                        cd /opt/express-app
+                        npm ci --omit=dev
+                        sudo systemctl restart express-app
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Express deployment completed successfully!'
+        }
+        failure {
+            echo 'Express deployment failed. Check the console output.'
+        }
+    }
+}
