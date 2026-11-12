@@ -1,218 +1,147 @@
+# Jenkins CI/CD Automation on AWS
 
+## Project Overview
 
-\# Jenkins CI/CD Deployment - Flask and Express
+This project demonstrates Continuous Integration and Continuous Deployment (CI/CD) using Jenkins, GitHub, and AWS EC2.
 
+It deploys two applications:
+- **Flask Backend:** Python application running on port 5000.
+- **Express Frontend:** Node.js application running on port 3000.
 
+Jenkins automatically checks out the latest source code from GitHub, installs dependencies, performs basic validation, and deploys each application when a GitHub push event triggers the configured webhook.
 
-\## Project Overview
+## Architecture
 
+- AWS EC2 instance running Ubuntu 24.04.
+- Jenkins for CI/CD automation.
+- GitHub repository for source-code management.
+- GitHub webhook for automatic pipeline triggering.
+- Nginx as a reverse proxy for the Express frontend.
+- Flask backend managed by systemd.
+- Express frontend managed by systemd.
 
-
-This project deploys a Flask backend and an Express.js frontend on a single Amazon EC2 instance. Jenkins automates application deployment whenever code is pushed to GitHub.
-
-
-
-\## Project Structure
-
-
+## Project Structure
 
 ```text
-
-Jenkins\_CICD\_Abhay/
-
+Jenkins_CICD_Abhay/
 ├── flask/
-
 │   ├── app.py
-
 │   ├── requirements.txt
-
-│   └── Jenkinsfile
-
+│   ├── Jenkinsfile
+│   └── Dockerfile
 ├── express/
-
-│   ├── public/
-
 │   ├── server.js
-
 │   ├── package.json
-
 │   ├── package-lock.json
-
+│   ├── public/
 │   └── Jenkinsfile
-
 ├── screenshots/
-
 ├── documentation/
-
 └── README.md
-
 ```
 
+## Jenkins Pipelines
 
+Two independent Jenkins pipelines are configured.
 
-\## Architecture
+### 1. Flask-CI-CD
 
+Pipeline stages:
+1. Checkout source code from GitHub.
+2. Install Python dependencies and Gunicorn.
+3. Validate Python application syntax.
+4. Deploy application files.
+5. Restart the Flask systemd service.
 
+### 2. Express-CI-CD
 
-GitHub Repositories
+Pipeline stages:
+1. Checkout source code from GitHub.
+2. Install Node.js dependencies.
+3. Validate JavaScript syntax.
+4. Deploy application files.
+5. Restart the Express systemd service.
 
-&#x20;      |
+## GitHub Webhook
 
-&#x20;      | Push / Webhook
+A GitHub webhook is configured to send push events to Jenkins.
 
-&#x20;      v
+Webhook endpoint:
 
-&#x20;    Jenkins
+`http://<EC2-PUBLIC-IP>:8080/github-webhook/`
 
-&#x20;      |
+Event subscription: Push events.
 
-&#x20;      +------ Flask Pipeline
+A successful HTTP 200 webhook delivery was verified.
 
-&#x20;      |          |
+## Application Deployment
 
-&#x20;      |          v
+- Flask application: `127.0.0.1:5000`
+- Express application: `127.0.0.1:3000`
+- Public application access: `http://<EC2-PUBLIC-IP>/`
+- Nginx listens on port 80 and forwards requests to Express.
 
-&#x20;      |      Flask Backend
+Both applications are managed using systemd services:
+- `flask-app`
+- `express-app`
 
-&#x20;      |      Port 5000
+## Verification
 
-&#x20;      |
+The following tests were completed successfully:
 
-&#x20;      +------ Express Pipeline
+- Flask Jenkins pipeline completed successfully.
+- Express Jenkins pipeline completed successfully.
+- GitHub webhook delivery returned HTTP 200.
+- Both application services were verified.
+- Public frontend was accessible.
+- Form submission successfully reached the backend.
 
-&#x20;                 |
+## Technologies Used
 
-&#x20;                 v
+- AWS EC2
+- Ubuntu 24.04
+- Jenkins
+- Git and GitHub
+- Python 3
+- Flask
+- Gunicorn
+- Node.js
+- Express.js
+- Nginx
+- Linux systemd
+- GitHub Webhooks
 
-&#x20;            Express Frontend
+## GitHub Repository
 
-&#x20;              Port 3000
+Repository: https://github.com/Mrdraculla/Docker_Abhay
 
+Flask source: `Jenkins_CICD_Abhay/flask/`
 
+Express source: `Jenkins_CICD_Abhay/express/`
 
-Both applications run on the same EC2 instance.
+## Deployment Environment
 
+- Cloud Provider: Amazon Web Services
+- Compute: Amazon EC2
+- CI/CD: Jenkins
+- Backend: Python and Flask
+- Frontend: Node.js and Express
+- Version Control: Git and GitHub
 
-
-\## Application Details
-
-
-
-\### Flask Backend
-
-\- Framework: Flask
-
-\- Entry point: app.py
-
-\- Port: 5000
-
-\- Dependencies: requirements.txt
-
-\- API endpoint: POST /api/submit
-
-
-
-\### Express Frontend
-
-\- Framework: Express.js
-
-\- Entry point: server.js
-
-\- Port: 3000
-
-\- Dependencies: package.json
-
-\- Communicates with Flask through BACKEND\_URL.
-
-
-
-\## CI/CD Pipeline
-
-
-
-Two independent Jenkins pipelines are configured:
-
-
-
-1\. Flask Pipeline
-
-&#x20;  - Checkout source code
-
-&#x20;  - Install Python dependencies
-
-&#x20;  - Run syntax validation
-
-&#x20;  - Deploy application
-
-&#x20;  - Restart Flask service
-
-
-
-2\. Express Pipeline
-
-&#x20;  - Checkout source code
-
-&#x20;  - Install Node.js dependencies
-
-&#x20;  - Run syntax validation
-
-&#x20;  - Deploy application
-
-&#x20;  - Restart Express service
-
-
-
-GitHub webhooks will trigger the pipelines when code is pushed.
-
-
-
-\## GitHub Repository
-
-
-
-Repository: https://github.com/Mrdraculla/Docker\_Abhay
-
-
-
-Flask source: Jenkins\_CICD\_Abhay/flask/
-
-
-
-Express source: Jenkins\_CICD\_Abhay/express/
-
-
-
-\## Deployment Environment
-
-
-
-\- Cloud Provider: Amazon Web Services
-
-\- Compute: Amazon EC2
-
-\- CI/CD: Jenkins
-
-\- Backend: Python and Flask
-
-\- Frontend: Node.js and Express
-
-\- Version Control: Git and GitHub
-
-
-
-\## Screenshots and Documentation
-
-
+## Screenshots and Documentation
 
 Deployment screenshots, Jenkins pipeline logs, webhook evidence, and command explanations are maintained in the screenshots and documentation folders.
 
+## Final Verification
 
+- Flask Jenkins pipeline: **SUCCESS**
+- Express Jenkins pipeline: **SUCCESS**
+- GitHub webhook: Successfully tested with HTTP 200 response.
+- Public web application: Successfully accessed.
+- Frontend form submission: Successful.
 
-\## Final Verification
+## Important Notes
 
-Webhook testing successful
-
-The final deployment URLs, EC2 details, successful pipeline builds, and webhook test results will be added after deployment.
-
-
-
+- AWS resources should be stopped or terminated after assignment verification to avoid unnecessary charges.
+- Do not commit AWS credentials, private keys, Jenkins passwords, webhook secrets, or other sensitive information to GitHub.
+- The public EC2 IP may change if the instance is stopped and restarted unless an Elastic IP is assigned.
